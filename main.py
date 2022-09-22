@@ -80,11 +80,12 @@ def s16(value):
 
 # main routine
 async def main():
-    volts = get_config("volts")
-    loop_seconds = get_config("loop_seconds")
 
     # main loop
     while True:
+        volts = get_config("volts")
+        loop_seconds = get_config("loop_seconds")
+
         # instantiate tesla object
         tesla = teslapy.Tesla(get_config("account"))
         if not tesla.authorized:
@@ -148,10 +149,23 @@ async def main():
                 print("car not plugged in")
                 sleep(loop_seconds)
                 continue
+            elif car_state['charge_state']['charging_state'] == "Charging":
+                state = True
+
 
             # we have extra energy
             if excess_amps > 0:
                 max = get_config("max_amps")
+
+                # we have energy to add to existing charge:
+                if state is True and excess_amps > 0:
+                    charge_amps += excess_amps
+                    if charge_amps > max:
+                        print("setting to max amps: " + str(max))
+                        charge_amps = max
+                    else:
+                        print("adding " + str(excess_amps) + " amps. charge set to " + str(charge_amps))
+                    charging_amps(vehicle, charge_amps)
 
                 # more power!
                 if state is not True and excess_amps > 0:
@@ -170,16 +184,6 @@ async def main():
                 sleep(loop_seconds)
                 continue
 
-                # we have energy to add to existing charge:
-                if state is True and excess_amps > 0:
-                    charge_amps += excess_amps
-                    if charge_amps > max:
-                        print("setting to max amps: " + str(max))
-                        charge_amps = max
-                    else:
-                        print("adding " + str(excess_amps) + " amps. charge set to " + str(charge_amps))
-                    charging_amps(vehicle, charge_amps)
-
             else:
 
                 # we're charging and drawing more than we're producing
@@ -194,12 +198,12 @@ async def main():
                         stop_charge(vehicle)
                     else:
                         # ratchet down:
-                        print("removing " + str(excess_amps) + " amps")
-                        charging_amps(charge_amps)
+                        print("reducing by " + str(abs(excess_amps)) + " amps")
+                        charging_amps(vehicle, charge_amps)
                         # need to hit api twice below 5 amps
                         if charge_amps < 5:
                             sleep(2)
-                            charging_amps(charge_amps)
+                            charging_amps(vehicle, charge_amps)
 
             sleep(loop_seconds)
             continue
