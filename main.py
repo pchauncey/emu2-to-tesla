@@ -81,13 +81,17 @@ def s16(value):
 # main routine
 async def main():
 
+
+    # instantiate tesla object
+    print("Starting tesla API object... ", end="")
+    tesla = teslapy.Tesla(get_config("account"))
+    print("done.")
+
     # main loop
     while True:
         volts = get_config("volts")
         loop_seconds = get_config("loop_seconds")
 
-        # instantiate tesla object
-        tesla = teslapy.Tesla(get_config("account"))
         if not tesla.authorized:
             print('Use browser to login. Page Not Found will be shown at success.')
             print('Open this URL: ' + tesla.authorization_url())
@@ -95,15 +99,20 @@ async def main():
 
         # loop through vehicles
         for vehicle in tesla.vehicle_list():
+            print("Getting vehicle data... ", end="")
             car_state = get_data(vehicle)
+            print("done.")
 
             # only do all stuff at home:
-            home_lat = get_config("home_lat")
-            home_long = get_config("home_long")
-            if not str(home_lat) in str(car_state['drive_state']['latitude']) and not str(home_long) in str(car_state['drive_state']['longitude']):
-                print("car isn't here")
-                sleep(loop_seconds)
-                continue
+            try:
+                home_lat = get_config("home_lat")
+                home_long = get_config("home_long")
+                if not str(home_lat) in str(car_state['drive_state']['latitude']) and not str(home_long) in str(car_state['drive_state']['longitude']):
+                    print("car isn't here")
+                    sleep(loop_seconds)
+                    continue
+            except:
+                print("except")
 
             # set charge state:
             if car_state['charge_state']['charging_state'] == "Charging":
@@ -191,7 +200,7 @@ async def main():
                     if (charge_amps) < 1:
                         # we're out of excess power
                         print("stopping charge")
-                        charging_amps(0)
+                        charging_amps(vehicle, 0)
                         charge_amps = 0
                         state = False
                         stop_charge(vehicle)
