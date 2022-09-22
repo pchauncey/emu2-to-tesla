@@ -23,20 +23,20 @@ def get_data(self):
 
 # start charging
 def start_charge(self):
-    return
     self.command('START_CHARGE')
+    return
 
 
 # stop charging
 def stop_charge(self):
-    return
     self.command('STOP_CHARGE')
+    return
 
 
 # set charge rate limit in amps
 def charging_amps(self, amps):
-    return
     self.command('CHARGING_AMPS', charging_amps=amps)
+    return
 
 
 # read current smart meter data
@@ -145,9 +145,8 @@ async def main():
             # car isn't plugged in
             elif car_state['charge_state']['charging_state'] == "Disconnected":
                 print("car not plugged in")
-#                sleep(loop_seconds)
-#                continue
-
+                sleep(loop_seconds)
+                continue
 
             # we have extra energy
             if excess_amps > 0:
