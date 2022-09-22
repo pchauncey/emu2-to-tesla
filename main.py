@@ -99,6 +99,7 @@ async def main():
             # only do all stuff at home:
             home_lat = get_config("home_lat")
             home_long = get_config("home_long")
+# TODO: geo fence it to the house
 #            if not home_lat in car_state['drive_state']['latitude'] and not home_long in car_state['drive_state']['longitude']:
 #                print("car isn't home")
 #                sleep(loop_seconds)
@@ -170,7 +171,7 @@ async def main():
                 continue
 
                 # we have energy to add to existing charge:
-                if state is True and excess_amps > 1:
+                if state is True and excess_amps > 0:
                     charge_amps += excess_amps
                     if charge_amps > max:
                         print("setting to max amps: " + str(max))
