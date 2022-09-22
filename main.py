@@ -100,11 +100,10 @@ async def main():
             # only do all stuff at home:
             home_lat = get_config("home_lat")
             home_long = get_config("home_long")
-# TODO: geo fence it to the house
-#            if not home_lat in car_state['drive_state']['latitude'] and not home_long in car_state['drive_state']['longitude']:
-#                print("car isn't home")
-#                sleep(loop_seconds)
-#                continue
+            if not str(home_lat) in str(car_state['drive_state']['latitude']) and not str(home_long) in str(car_state['drive_state']['longitude']):
+                print("car isn't here")
+                sleep(loop_seconds)
+                continue
 
             # set charge state:
             if car_state['charge_state']['charging_state'] == "Charging":
