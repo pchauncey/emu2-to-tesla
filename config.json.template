@@ -1,0 +1,8 @@
+{
+	"account": "your@email.addr",
+	"volts": 230,
+	"loop_seconds": 30,
+	"max_amps": 32,
+	"home_lat": "42.98",
+	"home_long": "-88.81"
+}
