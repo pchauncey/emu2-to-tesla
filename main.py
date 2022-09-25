@@ -87,32 +87,39 @@ async def main():
     tesla = teslapy.Tesla(get_config("account"))
     print("done.")
 
+    if not tesla.authorized:
+        print('Use browser to login. Page Not Found will be shown at success.')
+        print('Open this URL: ' + tesla.authorization_url())
+        tesla.fetch_token(authorization_response=input('Enter URL after authentication: '))
+
     # main loop
     while True:
         volts = get_config("volts")
         loop_seconds = get_config("loop_seconds")
 
-        if not tesla.authorized:
-            print('Use browser to login. Page Not Found will be shown at success.')
-            print('Open this URL: ' + tesla.authorization_url())
-            tesla.fetch_token(authorization_response=input('Enter URL after authentication: '))
-
         # loop through vehicles
         for vehicle in tesla.vehicle_list():
+
+            # don't hit api limits:
+            sleep(1)
+
             print("Getting vehicle data... ", end="")
             car_state = get_data(vehicle)
             print("done.")
 
-            # only do all stuff at home:
+            # don't hit api limits:
+            sleep(1)
+
+            # geofence:
             try:
                 home_lat = get_config("home_lat")
                 home_long = get_config("home_long")
                 if not str(home_lat) in str(car_state['drive_state']['latitude']) and not str(home_long) in str(car_state['drive_state']['longitude']):
-                    print("car isn't here")
+                    print("car isn't at this location")
                     sleep(loop_seconds)
                     continue
             except:
-                print("except")
+                print("couldn't get geolocation data from api")
 
             # set charge state:
             if car_state['charge_state']['charging_state'] == "Charging":
@@ -159,7 +166,6 @@ async def main():
                 continue
             elif car_state['charge_state']['charging_state'] == "Charging":
                 state = True
-
 
             # we have extra energy
             if excess_amps > 0:
